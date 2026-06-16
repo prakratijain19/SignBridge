@@ -21,6 +21,12 @@ enum Role {
   ADMIN
 }
 
+enum TextScale {
+  NORMAL
+  LARGE
+  LARGER
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -28,10 +34,25 @@ model User {
   passwordHash  String
   role          Role           @default(HEARING_USER)
   refreshTokens RefreshToken[]
+  settings      UserSettings?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   @@map("users")
+}
+
+model UserSettings {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interfaceLanguage String    @default("en") // 'en' | 'hi' | 'gu'
+  textScale         TextScale @default(NORMAL)
+  highContrast      Boolean   @default(false)
+  reduceMotion      Boolean   @default(false)
+  captionsEnabled   Boolean   @default(true) // used by later phases
+  updatedAt         DateTime  @updatedAt
+
+  @@map("user_settings")
 }
 
 model RefreshToken {

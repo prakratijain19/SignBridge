@@ -55,6 +55,27 @@ export interface AuthResult {
   accessToken: string;
 }
 
+/** Relative size of interface text, applied app-wide via a CSS scale. */
+export type TextScale = 'NORMAL' | 'LARGE' | 'LARGER';
+
+/** The authenticated user's profile, as returned by the users API. */
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  role: UserRole;
+  createdAt: string;
+}
+
+/** Per-user interface preferences, applied app-wide. */
+export interface UserSettings {
+  interfaceLanguage: LanguageCode;
+  textScale: TextScale;
+  highContrast: boolean;
+  reduceMotion: boolean;
+  captionsEnabled: boolean;
+}
+
 /** Service health payload returned by GET /api/health. */
 export interface HealthStatus {
   status: 'ok' | 'degraded';

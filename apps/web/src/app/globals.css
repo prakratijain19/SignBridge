@@ -4,10 +4,67 @@
 
 :root {
   --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  /* Interface scale, driven by the user's text-size preference. */
+  --ui-scale: 1;
+}
+
+/* Scaling the root font-size scales every rem-based size app-wide, so the
+   text-size preference visibly affects the whole interface, not just body copy.
+   NORMAL leaves it at the 16px baseline. */
+html {
+  font-size: calc(100% * var(--ui-scale));
+}
+
+html[data-text-scale='LARGE'] {
+  --ui-scale: 1.125;
+}
+
+html[data-text-scale='LARGER'] {
+  --ui-scale: 1.25;
 }
 
 body {
   @apply bg-canvas text-ink antialiased;
+  font-family: var(--font-sans);
+  font-size: 1rem; /* >= 16px baseline */
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+}
+
+/* A consistent, high-visibility focus ring on every interactive element
+   (>= 3:1 contrast). Components may layer their own, but this is the floor. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid #2f6df6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* High-contrast mode: pure-white surfaces, darker hairlines and secondary text,
+   and a thicker focus ring. Keys off utility classes used consistently in the
+   shell components plus a few token overrides. */
+html[data-contrast='high'] body {
+  @apply bg-white text-ink;
+}
+
+html[data-contrast='high'] .border-line,
+html[data-contrast='high'] .border {
+  border-color: #15182b !important;
+}
+
+html[data-contrast='high'] .text-muted {
+  color: #15182b !important;
+}
+
+html[data-contrast='high'] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline-width: 4px;
+  outline-offset: 3px;
 }
 
 /* Respect users who prefer reduced motion — a baseline for an
@@ -19,4 +76,12 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Mirror the same behaviour when the user enables reduce-motion in settings. */
+html[data-reduce-motion='on'] *,
+html[data-reduce-motion='on'] *::before,
+html[data-reduce-motion='on'] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
 }
