@@ -1,0 +1,26 @@
+{
+  "name": "@signbridge/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"(no lint configured for shared-types yet)\"",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@signbridge/tsconfig": "workspace:*",
+    "typescript": "^5.5.4"
+  }
+}
