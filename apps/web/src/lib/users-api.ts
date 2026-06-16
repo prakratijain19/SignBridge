@@ -1,18 +1,10 @@
-import type {
-  ApiResponse,
-  UserProfile,
-  UserSettings,
-} from '@signbridge/shared-types';
+import type { ApiResponse, UserProfile, UserSettings } from '@signbridge/shared-types';
 import { API_URL, AuthApiError } from './auth-api';
 
 /** The `authFetch` wrapper exposed by the auth context. */
 type AuthFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
-async function requestJson<T>(
-  authFetch: AuthFetch,
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
+async function requestJson<T>(authFetch: AuthFetch, path: string, init?: RequestInit): Promise<T> {
   const res = await authFetch(`${API_URL}${path}`, {
     ...init,
     headers: {

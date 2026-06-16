@@ -61,17 +61,15 @@ authRouter.post(
 
 authRouter.post(
   '/refresh',
-  asyncHandler(
-    async (req: Request, res: Response<ApiResponse<{ accessToken: string }>>) => {
-      const raw = req.cookies?.[REFRESH_COOKIE] as string | undefined;
-      if (!raw) {
-        throw new HttpError(401, 'UNAUTHORIZED', 'No refresh token provided.');
-      }
-      const { accessToken, refreshToken } = await rotateRefreshToken(raw);
-      setRefreshCookie(res, refreshToken);
-      res.json({ success: true, data: { accessToken } });
-    },
-  ),
+  asyncHandler(async (req: Request, res: Response<ApiResponse<{ accessToken: string }>>) => {
+    const raw = req.cookies?.[REFRESH_COOKIE] as string | undefined;
+    if (!raw) {
+      throw new HttpError(401, 'UNAUTHORIZED', 'No refresh token provided.');
+    }
+    const { accessToken, refreshToken } = await rotateRefreshToken(raw);
+    setRefreshCookie(res, refreshToken);
+    res.json({ success: true, data: { accessToken } });
+  }),
 );
 
 authRouter.post(

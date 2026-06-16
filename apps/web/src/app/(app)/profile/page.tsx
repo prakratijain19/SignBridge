@@ -12,15 +12,12 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <PageHeader
-        title="Profile"
-        context="Manage your account details and password."
-      />
+      <PageHeader title="Profile" context="Manage your account details and password." />
 
       <div className="space-y-8">
         <AccountSection
           email={user?.email ?? ''}
-          role={user ? ROLE_LABELS[user.role] ?? user.role : ''}
+          role={user ? (ROLE_LABELS[user.role] ?? user.role) : ''}
           initialName={user?.name ?? ''}
           authFetch={authFetch}
         />
@@ -33,13 +30,10 @@ export default function ProfilePage() {
 type AuthFetch = ReturnType<typeof useAuth>['authFetch'];
 
 function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <section className="rounded-xl border border-line bg-surface p-6">{children}</section>
-  );
+  return <section className="rounded-xl border border-line bg-surface p-6">{children}</section>;
 }
 
-const inputClass =
-  'mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink';
+const inputClass = 'mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink';
 
 function AccountSection({
   email,
@@ -67,9 +61,7 @@ function AccountSection({
       setName(profile.name ?? '');
       setSuccess(true);
     } catch (err) {
-      setError(
-        err instanceof AuthApiError ? err.message : 'Could not save your changes.',
-      );
+      setError(err instanceof AuthApiError ? err.message : 'Could not save your changes.');
     } finally {
       setStatus('idle');
     }
@@ -149,9 +141,7 @@ function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
       setCurrentPassword('');
       setNewPassword('');
     } catch (err) {
-      setError(
-        err instanceof AuthApiError ? err.message : 'Could not update your password.',
-      );
+      setError(err instanceof AuthApiError ? err.message : 'Could not update your password.');
     } finally {
       setStatus('idle');
     }

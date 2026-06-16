@@ -15,9 +15,7 @@ export const SUPPORTED_LANGUAGES: readonly LanguageCode[] = ['en', 'hi', 'gu'] a
 export type Modality = 'sign' | 'speech' | 'text' | 'avatar';
 
 /** Standard envelope returned by every API endpoint. */
-export type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error: ApiError };
+export type ApiResponse<T> = { success: true; data: T } | { success: false; error: ApiError };
 
 export interface ApiError {
   /** Machine-readable code, e.g. "VALIDATION_ERROR". */

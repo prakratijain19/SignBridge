@@ -70,15 +70,12 @@ function StartConversationHero() {
     >
       <BridgeMotif />
       <div className="relative max-w-xl">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-canvas/70">
-          Start here
-        </p>
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-canvas/70">Start here</p>
         <h2 id="hero-heading" className="mt-2 font-display text-3xl font-semibold sm:text-4xl">
           Start a conversation
         </h2>
         <p className="mt-3 text-canvas/80">
-          Bridge sign, speech, and text in real time — so everyone in the room can
-          follow along.
+          Bridge sign, speech, and text in real time — so everyone in the room can follow along.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <button

@@ -1,10 +1,5 @@
 import type { Metadata } from 'next';
-import {
-  Inter,
-  Hanken_Grotesk,
-  Noto_Sans_Devanagari,
-  Noto_Sans_Gujarati,
-} from 'next/font/google';
+import { Inter, Hanken_Grotesk, Noto_Sans_Devanagari, Noto_Sans_Gujarati } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 

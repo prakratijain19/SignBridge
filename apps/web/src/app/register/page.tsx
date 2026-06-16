@@ -47,7 +47,10 @@ export default function RegisterPage() {
   const fieldError = (field: string): string | undefined => fieldErrors[field]?.[0];
 
   return (
-    <main id="main" className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
+    <main
+      id="main"
+      className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16"
+    >
       <h1 className="text-3xl font-semibold tracking-tight">Create your account</h1>
       <p className="mt-2 text-ink/70">Join SignBridge.</p>
 
@@ -119,9 +122,7 @@ export default function RegisterPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            aria-describedby={
-              fieldError('password') ? 'password-error' : 'password-hint'
-            }
+            aria-describedby={fieldError('password') ? 'password-error' : 'password-hint'}
             aria-invalid={fieldError('password') ? true : undefined}
             className="mt-1 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
           />

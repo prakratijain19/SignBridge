@@ -21,10 +21,7 @@ export default function SettingsPage() {
   const { settings, updateSettings } = useSettings();
   const [error, setError] = useState<string | null>(null);
 
-  async function change<K extends keyof typeof settings>(
-    key: K,
-    value: (typeof settings)[K],
-  ) {
+  async function change<K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) {
     setError(null);
     try {
       await updateSettings({ [key]: value });
@@ -41,7 +38,10 @@ export default function SettingsPage() {
       />
 
       {error && (
-        <p role="alert" className="mb-6 rounded-lg border border-beacon/40 bg-beacon/10 px-4 py-3 text-sm text-ink">
+        <p
+          role="alert"
+          className="mb-6 rounded-lg border border-beacon/40 bg-beacon/10 px-4 py-3 text-sm text-ink"
+        >
           {error}
         </p>
       )}

@@ -1,9 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import type {
-  ApiResponse,
-  UserProfile,
-  UserSettings,
-} from '@signbridge/shared-types';
+import type { ApiResponse, UserProfile, UserSettings } from '@signbridge/shared-types';
 import type { UserSettings as PrismaUserSettings, User } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';

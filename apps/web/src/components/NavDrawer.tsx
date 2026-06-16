@@ -29,9 +29,7 @@ export function NavDrawer({
 
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
-    const focusables = panel
-      ? Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
-      : [];
+    const focusables = panel ? Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)) : [];
     // Move focus into the drawer.
     (focusables[0] ?? panel)?.focus();
 
@@ -69,11 +67,7 @@ export function NavDrawer({
   return (
     <div className="lg:hidden">
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-ink/40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 z-40 bg-ink/40" onClick={onClose} aria-hidden="true" />
       {/* Panel */}
       <div
         ref={panelRef}

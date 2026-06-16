@@ -19,12 +19,7 @@ export function validateBody<T>(schema: ZodSchema<T>) {
           const key = issue.path.join('.') || '_';
           (details[key] ??= []).push(issue.message);
         }
-        throw new HttpError(
-          400,
-          'VALIDATION_ERROR',
-          'The submitted data is invalid.',
-          details,
-        );
+        throw new HttpError(400, 'VALIDATION_ERROR', 'The submitted data is invalid.', details);
       }
       throw err;
     }

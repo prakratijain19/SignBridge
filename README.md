@@ -14,14 +14,14 @@ skeleton, database, and CI. Features are added in later phases.
 
 ## Tech stack
 
-| Layer            | Technology                                            |
-| ---------------- | ----------------------------------------------------- |
-| Monorepo         | pnpm workspaces + Turborepo                           |
-| Frontend         | Next.js 14 (App Router), React 18, TypeScript, Tailwind |
-| Backend          | Node.js, Express, TypeScript                           |
-| Database / ORM   | PostgreSQL 16, Prisma                                  |
-| ML service       | Python 3.11, FastAPI (training & model export)        |
-| Tooling          | Docker Compose, GitHub Actions, ESLint, Prettier      |
+| Layer          | Technology                                              |
+| -------------- | ------------------------------------------------------- |
+| Monorepo       | pnpm workspaces + Turborepo                             |
+| Frontend       | Next.js 14 (App Router), React 18, TypeScript, Tailwind |
+| Backend        | Node.js, Express, TypeScript                            |
+| Database / ORM | PostgreSQL 16, Prisma                                   |
+| ML service     | Python 3.11, FastAPI (training & model export)          |
+| Tooling        | Docker Compose, GitHub Actions, ESLint, Prettier        |
 
 > Architecture note: live ISL recognition runs **in the browser**
 > (MediaPipe + TensorFlow.js). The Python ML service handles offline training
@@ -85,17 +85,17 @@ docker compose --profile full up --build
 
 ## Common scripts
 
-| Command             | What it does                                  |
-| ------------------- | --------------------------------------------- |
-| `pnpm dev`          | Run web + API in watch mode                   |
-| `pnpm build`        | Build all packages and apps                   |
-| `pnpm lint`         | Lint every workspace                          |
-| `pnpm typecheck`    | Type-check every workspace                    |
-| `pnpm test`         | Run all tests                                 |
-| `pnpm db:migrate`   | Create/apply a Prisma migration               |
-| `pnpm db:studio`    | Open Prisma Studio                            |
-| `pnpm docker:up`    | Start PostgreSQL                              |
-| `pnpm docker:down`  | Stop containers                               |
+| Command            | What it does                    |
+| ------------------ | ------------------------------- |
+| `pnpm dev`         | Run web + API in watch mode     |
+| `pnpm build`       | Build all packages and apps     |
+| `pnpm lint`        | Lint every workspace            |
+| `pnpm typecheck`   | Type-check every workspace      |
+| `pnpm test`        | Run all tests                   |
+| `pnpm db:migrate`  | Create/apply a Prisma migration |
+| `pnpm db:studio`   | Open Prisma Studio              |
+| `pnpm docker:up`   | Start PostgreSQL                |
+| `pnpm docker:down` | Stop containers                 |
 
 ## Verifying Phase 1
 

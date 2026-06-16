@@ -5,9 +5,7 @@ import { SELECTABLE_ROLES } from '@signbridge/shared-types';
  * The three roles a user may self-select at registration. ADMIN is intentionally
  * excluded — it is never assignable through the public API.
  */
-const selectableRole = z.enum(
-  SELECTABLE_ROLES as unknown as [string, ...string[]],
-);
+const selectableRole = z.enum(SELECTABLE_ROLES as unknown as [string, ...string[]]);
 
 export const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email(),

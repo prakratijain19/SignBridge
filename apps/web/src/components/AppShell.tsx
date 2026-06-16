@@ -87,7 +87,13 @@ function Wordmark() {
         className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-signal text-surface"
       >
         {/* Two-channel "bridge" motif */}
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
           <path d="M4 8v8M20 8v8" strokeLinecap="round" />
           <path d="M4 12h16" strokeLinecap="round" />
         </svg>
@@ -97,13 +103,7 @@ function Wordmark() {
   );
 }
 
-function NavLinks({
-  pathname,
-  onNavigate,
-}: {
-  pathname: string;
-  onNavigate?: () => void;
-}) {
+function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
     <>
       {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -115,9 +115,7 @@ function NavLinks({
             onClick={onNavigate}
             aria-current={active ? 'page' : undefined}
             className={`flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
-              active
-                ? 'bg-canvas text-signalInk'
-                : 'text-ink hover:bg-canvas'
+              active ? 'bg-canvas text-signalInk' : 'text-ink hover:bg-canvas'
             }`}
           >
             <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />
@@ -145,7 +143,7 @@ function UserChip() {
           {user?.name ?? user?.email ?? 'Signed in'}
         </p>
         <p className="truncate text-xs text-muted">
-          {user ? ROLE_LABELS[user.role] ?? user.role : ''}
+          {user ? (ROLE_LABELS[user.role] ?? user.role) : ''}
         </p>
       </div>
       <button
