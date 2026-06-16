@@ -27,3 +27,8 @@ dev = [
 
 [tool.ruff]
 line-length = 100
+
+[tool.pytest.ini_options]
+# Be explicit about discovery so `pytest` reliably finds test_*.py here.
+testpaths = ["."]
+python_files = ["test_*.py"]
