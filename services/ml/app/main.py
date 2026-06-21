@@ -16,6 +16,26 @@ from pydantic import BaseModel
 START_TIME = time.time()
 VERSION = "0.1.0"
 
+# Mirror of ISL_VOCABULARY in packages/shared-types. Live inference runs in the
+# browser; this endpoint just lets tools discover the label set.
+ISL_VOCABULARY = [
+    "hello",
+    "yes",
+    "no",
+    "thank_you",
+    "please",
+    "help",
+    "stop",
+    "i",
+    "you",
+    "good",
+    "eat",
+    "drink",
+    "water",
+    "name",
+    "more",
+]
+
 app = FastAPI(title="SignBridge ML Service", version=VERSION)
 
 
@@ -34,3 +54,13 @@ def health() -> HealthStatus:
         version=VERSION,
         uptime_seconds=int(time.time() - START_TIME),
     )
+
+
+class LabelsResponse(BaseModel):
+    labels: list[str]
+
+
+@app.get("/labels", response_model=LabelsResponse)
+def labels() -> LabelsResponse:
+    """Returns the ISL recognition vocabulary. Live inference stays in the browser."""
+    return LabelsResponse(labels=ISL_VOCABULARY)

@@ -14,6 +14,7 @@ dependencies = [
 # Installed locally when working on Phase 5 (ISL recognition).
 train = [
     "tensorflow>=2.16.0",
+    "tensorflowjs>=4.20.0",
     "mediapipe>=0.10.14",
     "numpy>=1.26.0",
     "pandas>=2.2.0",

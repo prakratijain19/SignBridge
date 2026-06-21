@@ -111,6 +111,56 @@ export interface ConversationSummary extends Conversation {
   lastMessagePreview: string | null;
 }
 
+/**
+ * Initial ISL recognition vocabulary (MVP, static signs).
+ *
+ * IMPORTANT: each label MUST be verified against the ISLRTC Indian Sign Language
+ * dictionary — and ideally reviewed with a Deaf consultant — before real use.
+ * This is a starting candidate set, not validated ISL.
+ */
+export const ISL_VOCABULARY = [
+  'hello',
+  'yes',
+  'no',
+  'thank_you',
+  'please',
+  'help',
+  'stop',
+  'i',
+  'you',
+  'good',
+  'eat',
+  'drink',
+  'water',
+  'name',
+  'more',
+] as const;
+
+export type IslLabel = (typeof ISL_VOCABULARY)[number];
+
+/**
+ * Length of the normalized landmark feature vector: two hand slots, each a
+ * presence flag plus 21 (x, y) pairs → 2 × (1 + 42) = 86. Shared by collection,
+ * inference, and the trainer so they can never drift apart.
+ */
+export const SIGN_FEATURE_LENGTH = 86;
+
+export interface SignSampleInput {
+  label: IslLabel;
+  features: number[]; // fixed-length normalized vector (SIGN_FEATURE_LENGTH)
+  handCount: 1 | 2;
+}
+
+export interface SignSampleStats {
+  label: IslLabel;
+  count: number;
+}
+
+export interface SignPrediction {
+  label: IslLabel;
+  confidence: number;
+}
+
 /** Service health payload returned by GET /api/health. */
 export interface HealthStatus {
   status: 'ok' | 'degraded';

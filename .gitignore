@@ -40,3 +40,8 @@ coverage/
 
 # Turbo
 .turbo/
+
+# Trained ISL model artifacts (generated offline by services/ml/app/train_isl.py).
+# The folder is kept via .gitkeep so the web app's fetch path always exists.
+/apps/web/public/models/isl/*
+!/apps/web/public/models/isl/.gitkeep

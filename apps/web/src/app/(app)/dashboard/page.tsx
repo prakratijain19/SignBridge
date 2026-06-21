@@ -1,6 +1,6 @@
 'use client';
 
-import { Mic, GraduationCap, Siren, Video } from 'lucide-react';
+import { Mic, Hand, GraduationCap, Siren, Video } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { PageHeader } from '@/components/PageHeader';
 import { FeatureCard } from '@/components/FeatureCard';
@@ -31,6 +31,12 @@ export default function DashboardPage() {
             title="Speech"
             description="Transcribe speech to text and speak typed messages aloud."
             href="/speech"
+          />
+          <FeatureCard
+            icon={Hand}
+            title="Sign recognition"
+            description="Recognize Indian Sign Language signs from your camera as text."
+            href="/sign"
           />
           <FeatureCard
             icon={GraduationCap}
