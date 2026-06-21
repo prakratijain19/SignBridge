@@ -27,6 +27,24 @@ enum TextScale {
   LARGER
 }
 
+enum ConversationMode {
+  SPEECH // this phase
+  LIVE // Phase 6
+  VIDEO // Phase 9
+}
+
+enum MessageModality {
+  SPEECH
+  TEXT
+  SIGN
+  AVATAR
+}
+
+enum MessageSender {
+  USER
+  PARTNER
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -35,6 +53,7 @@ model User {
   role          Role           @default(HEARING_USER)
   refreshTokens RefreshToken[]
   settings      UserSettings?
+  conversations Conversation[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -66,4 +85,32 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+model Conversation {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  mode      ConversationMode @default(SPEECH)
+  messages  Message[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String          @id @default(cuid())
+  conversationId String
+  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         MessageSender   @default(USER)
+  modality       MessageModality
+  language       String          @default("en") // 'en' | 'hi' | 'gu'
+  content        String
+  createdAt      DateTime        @default(now())
+
+  @@index([conversationId])
+  @@map("messages")
 }

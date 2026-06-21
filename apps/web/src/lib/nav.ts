@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, User, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Mic, History, Settings, User, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   href: string;
@@ -9,6 +9,8 @@ export interface NavItem {
 /** Primary navigation for the authenticated app shell. */
 export const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/speech', label: 'Speech', icon: Mic },
+  { href: '/history', label: 'History', icon: History },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

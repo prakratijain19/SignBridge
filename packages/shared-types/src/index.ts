@@ -74,6 +74,43 @@ export interface UserSettings {
   captionsEnabled: boolean;
 }
 
+/** How a conversation is conducted. SPEECH is this phase; others land later. */
+export type ConversationMode = 'SPEECH' | 'LIVE' | 'VIDEO';
+
+/** The medium a single message was produced in. */
+export type MessageModality = 'SPEECH' | 'TEXT' | 'SIGN' | 'AVATAR';
+
+/** Who produced a message: the signed-in user or their conversation partner. */
+export type MessageSender = 'USER' | 'PARTNER';
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  sender: MessageSender;
+  modality: MessageModality;
+  language: LanguageCode;
+  content: string;
+  createdAt: string;
+}
+
+export interface Conversation {
+  id: string;
+  title: string | null;
+  mode: ConversationMode;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationWithMessages extends Conversation {
+  messages: Message[];
+}
+
+/** List item for the conversation history view: a conversation plus a preview. */
+export interface ConversationSummary extends Conversation {
+  messageCount: number;
+  lastMessagePreview: string | null;
+}
+
 /** Service health payload returned by GET /api/health. */
 export interface HealthStatus {
   status: 'ok' | 'degraded';

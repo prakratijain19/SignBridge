@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageSquare, GraduationCap, Siren, Video } from 'lucide-react';
+import { Mic, GraduationCap, Siren, Video } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { PageHeader } from '@/components/PageHeader';
 import { FeatureCard } from '@/components/FeatureCard';
@@ -27,10 +27,10 @@ export default function DashboardPage() {
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <FeatureCard
-            icon={MessageSquare}
-            title="Conversation"
-            description="Real-time sign, speech, and text translation in one place."
-            comingSoon
+            icon={Mic}
+            title="Speech"
+            description="Transcribe speech to text and speak typed messages aloud."
+            href="/speech"
           />
           <FeatureCard
             icon={GraduationCap}
