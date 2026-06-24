@@ -2,22 +2,23 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { ROLE_LABELS } from '@/lib/nav';
+import { useT } from '@/lib/i18n/use-translation';
 import { AuthApiError } from '@/lib/auth-api';
 import { changePassword, updateProfile } from '@/lib/users-api';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function ProfilePage() {
   const { user, authFetch } = useAuth();
+  const t = useT();
 
   return (
-    <div>
-      <PageHeader title="Profile" context="Manage your account details and password." />
+    <div className="animate-fade-up">
+      <PageHeader title={t('profile.title')} context={t('profile.context')} />
 
       <div className="space-y-8">
         <AccountSection
           email={user?.email ?? ''}
-          role={user ? (ROLE_LABELS[user.role] ?? user.role) : ''}
+          role={user ? t(`role.${user.role}`) : ''}
           initialName={user?.name ?? ''}
           authFetch={authFetch}
         />
@@ -30,10 +31,11 @@ export default function ProfilePage() {
 type AuthFetch = ReturnType<typeof useAuth>['authFetch'];
 
 function Card({ children }: { children: React.ReactNode }) {
-  return <section className="rounded-xl border border-line bg-surface p-6">{children}</section>;
+  return <section className="card p-6">{children}</section>;
 }
 
-const inputClass = 'mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink';
+const inputClass =
+  'mt-1 w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink transition focus:border-signal';
 
 function AccountSection({
   email,
@@ -46,6 +48,7 @@ function AccountSection({
   initialName: string;
   authFetch: AuthFetch;
 }) {
+  const t = useT();
   const [name, setName] = useState(initialName);
   const [status, setStatus] = useState<'idle' | 'saving'>('idle');
   const [success, setSuccess] = useState(false);
@@ -61,7 +64,7 @@ function AccountSection({
       setName(profile.name ?? '');
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof AuthApiError ? err.message : 'Could not save your changes.');
+      setError(err instanceof AuthApiError ? err.message : t('profile.saveError'));
     } finally {
       setStatus('idle');
     }
@@ -69,22 +72,24 @@ function AccountSection({
 
   return (
     <Card>
-      <h2 className="font-display text-xl font-semibold text-ink">Account</h2>
+      <h2 className="font-display text-xl font-semibold text-ink">{t('profile.account')}</h2>
 
       <dl className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <dt className="text-sm font-medium text-muted">Email</dt>
+          <dt className="text-sm font-medium text-muted">{t('profile.email')}</dt>
           <dd className="mt-1 text-ink">{email}</dd>
         </div>
         <div>
-          <dt className="text-sm font-medium text-muted">Role</dt>
-          <dd className="mt-1 text-ink">{role}</dd>
+          <dt className="text-sm font-medium text-muted">{t('profile.role')}</dt>
+          <dd className="mt-1">
+            <span className="chip">{role}</span>
+          </dd>
         </div>
       </dl>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-sm" noValidate>
         <label htmlFor="name" className="block text-sm font-medium text-ink">
-          Name
+          {t('profile.name')}
         </label>
         <input
           id="name"
@@ -108,15 +113,15 @@ function AccountSection({
         )}
         {success && (
           <p id="name-success" role="status" className="mt-1 text-sm text-bridge">
-            Your name has been updated.
+            {t('profile.nameUpdated')}
           </p>
         )}
         <button
           type="submit"
           disabled={status === 'saving'}
-          className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-ink px-5 py-2.5 font-medium text-canvas transition hover:bg-ink/90 disabled:opacity-60"
+          className="btn-primary mt-4 px-6 py-3 disabled:opacity-60"
         >
-          {status === 'saving' ? 'Saving…' : 'Save changes'}
+          {status === 'saving' ? t('profile.saving') : t('profile.saveChanges')}
         </button>
       </form>
     </Card>
@@ -124,6 +129,7 @@ function AccountSection({
 }
 
 function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
+  const t = useT();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving'>('idle');
@@ -141,7 +147,7 @@ function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
       setCurrentPassword('');
       setNewPassword('');
     } catch (err) {
-      setError(err instanceof AuthApiError ? err.message : 'Could not update your password.');
+      setError(err instanceof AuthApiError ? err.message : t('profile.passwordError'));
     } finally {
       setStatus('idle');
     }
@@ -149,15 +155,13 @@ function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
 
   return (
     <Card>
-      <h2 className="font-display text-xl font-semibold text-ink">Change password</h2>
-      <p className="mt-1 text-sm text-muted">
-        Choose a strong password you don&apos;t use elsewhere.
-      </p>
+      <h2 className="font-display text-xl font-semibold text-ink">{t('profile.changePassword')}</h2>
+      <p className="mt-1 text-sm text-muted">{t('profile.passwordHint')}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-sm space-y-4" noValidate>
         <div>
           <label htmlFor="current-password" className="block text-sm font-medium text-ink">
-            Current password
+            {t('profile.currentPassword')}
           </label>
           <input
             id="current-password"
@@ -175,7 +179,7 @@ function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
 
         <div>
           <label htmlFor="new-password" className="block text-sm font-medium text-ink">
-            New password
+            {t('profile.newPassword')}
           </label>
           <input
             id="new-password"
@@ -191,7 +195,7 @@ function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
             className={inputClass}
           />
           <p id="new-password-hint" className="mt-1 text-sm text-muted">
-            At least 8 characters.
+            {t('profile.passwordRule')}
           </p>
         </div>
 
@@ -202,16 +206,16 @@ function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
         )}
         {success && (
           <p role="status" className="text-sm text-bridge">
-            Your password has been updated.
+            {t('profile.passwordUpdated')}
           </p>
         )}
 
         <button
           type="submit"
           disabled={status === 'saving'}
-          className="inline-flex min-h-11 items-center rounded-lg bg-ink px-5 py-2.5 font-medium text-canvas transition hover:bg-ink/90 disabled:opacity-60"
+          className="btn-primary px-6 py-3 disabled:opacity-60"
         >
-          {status === 'saving' ? 'Updating…' : 'Update password'}
+          {status === 'saving' ? t('profile.updating') : t('profile.updatePassword')}
         </button>
       </form>
     </Card>

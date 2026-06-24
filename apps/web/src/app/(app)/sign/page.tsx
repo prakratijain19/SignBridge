@@ -11,21 +11,24 @@ import { useSignRecognition } from '@/lib/sign/use-sign-recognition';
 import { displayLabel } from '@/lib/sign/vocabulary';
 import type { HandResult } from '@/lib/sign/landmark-features';
 import { addMessage, createConversation } from '@/lib/conversations-api';
+import { useT } from '@/lib/i18n/use-translation';
+import type { TFunction } from '@/lib/i18n/use-translation';
 
-function cameraErrorMessage(code: string): string {
+function cameraErrorMessage(t: TFunction, code: string): string {
   switch (code) {
     case 'not-supported':
-      return 'Live sign recognition needs a modern browser with camera support (Chrome or Edge).';
+      return t('sign.error.notSupported');
     case 'camera-denied':
-      return 'Camera access is blocked. Allow it in your browser’s site settings, then press Start again.';
+      return t('sign.error.cameraDenied');
     case 'no-camera':
-      return 'No camera was found. Connect one and try again.';
+      return t('sign.error.noCamera');
     default:
-      return 'Could not start the camera. Please try again.';
+      return t('sign.error.default');
   }
 }
 
 export default function SignPage() {
+  const t = useT();
   const { authFetch } = useAuth();
   const { settings } = useSettings();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -107,15 +110,12 @@ export default function SignPage() {
   const { supported, modelChecked, modelLoaded, error } = recognition;
 
   return (
-    <div>
-      <PageHeader
-        title="Sign recognition"
-        context="Show a sign to your camera and SignBridge will recognize it as text."
-      />
+    <div className="animate-fade-up">
+      <PageHeader title={t('sign.title')} context={t('sign.context')} />
 
       <p className="mb-6">
-        <Link href="/sign/collect" className="text-sm font-medium text-signalInk hover:underline">
-          Collect training samples →
+        <Link href="/sign/collect" className="text-sm font-medium text-iris hover:underline">
+          {t('sign.collectLink')}
         </Link>
       </p>
 
@@ -125,14 +125,11 @@ export default function SignPage() {
         <ModelNotTrained />
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
-          <section
-            aria-labelledby="camera-heading"
-            className="rounded-xl border border-line bg-surface p-4"
-          >
+          <section aria-labelledby="camera-heading" className="card p-4">
             <h2 id="camera-heading" className="sr-only">
-              Camera
+              {t('sign.camera')}
             </h2>
-            <div className="relative overflow-hidden rounded-lg bg-ink/90">
+            <div className="relative overflow-hidden rounded-2xl bg-ink/90 shadow-soft">
               <video
                 ref={videoRef}
                 playsInline
@@ -153,22 +150,14 @@ export default function SignPage() {
 
             <div className="mt-4 flex items-center gap-3">
               {recognition.running ? (
-                <button
-                  type="button"
-                  onClick={recognition.stop}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line px-5 py-2.5 font-medium text-ink hover:bg-canvas"
-                >
+                <button type="button" onClick={recognition.stop} className="btn-secondary">
                   <Square aria-hidden="true" className="h-5 w-5" />
-                  Stop camera
+                  {t('sign.stopCamera')}
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={recognition.start}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-ink px-5 py-2.5 font-medium text-canvas transition hover:bg-ink/90"
-                >
+                <button type="button" onClick={recognition.start} className="btn-primary px-6 py-3">
                   <Play aria-hidden="true" className="h-5 w-5" />
-                  Start camera
+                  {t('sign.startCamera')}
                 </button>
               )}
             </div>
@@ -176,7 +165,7 @@ export default function SignPage() {
             {error && (
               <p role="alert" className="mt-3 flex items-start gap-2 text-sm text-beacon">
                 <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-                {cameraErrorMessage(error)}
+                {cameraErrorMessage(t, error)}
               </p>
             )}
           </section>
@@ -195,43 +184,46 @@ function RecognitionReadout({
   recognition: ReturnType<typeof useSignRecognition>;
   recognized: string[];
 }) {
+  const t = useT();
   const { currentPrediction, stableLabel, running } = recognition;
   const confidencePct =
     currentPrediction != null ? Math.round(currentPrediction.confidence * 100) : null;
 
   return (
-    <section
-      aria-labelledby="readout-heading"
-      className="rounded-xl border border-line bg-surface p-6"
-    >
+    <section aria-labelledby="readout-heading" className="card p-6">
       <h2 id="readout-heading" className="font-display text-xl font-semibold text-ink">
-        Recognized sign
+        {t('sign.recognizedSign')}
       </h2>
 
       {/* Large, high-contrast current sign. Scales with the text-size setting. */}
       <div
         aria-live="polite"
-        aria-label="Recognized sign"
-        className="mt-4 flex min-h-32 flex-col items-center justify-center rounded-lg border border-line bg-canvas p-6 text-center"
+        aria-label={t('sign.recognizedSign')}
+        className="mt-4 flex min-h-32 flex-col items-center justify-center rounded-2xl bg-aurora-soft p-6 text-center"
       >
-        <Hand aria-hidden="true" className="h-7 w-7 text-signalInk" />
+        <span aria-hidden="true" className="icon-tile h-11 w-11">
+          <Hand aria-hidden="true" className="h-6 w-6" />
+        </span>
         <p className="mt-2 text-4xl font-semibold text-ink">
-          {stableLabel ? displayLabel(stableLabel) : running ? 'Watching…' : '—'}
+          {stableLabel ? displayLabel(stableLabel) : running ? t('sign.watching') : '—'}
         </p>
         <p className="mt-1 text-sm text-muted">
           {confidencePct != null
-            ? `Current best: ${currentPrediction ? displayLabel(currentPrediction.label) : ''} · ${confidencePct}% confidence`
+            ? t('sign.currentBest', {
+                label: currentPrediction ? displayLabel(currentPrediction.label) : '',
+                pct: confidencePct,
+              })
             : running
-              ? 'Show a sign to the camera.'
-              : 'Press Start camera to begin.'}
+              ? t('sign.showSign')
+              : t('sign.pressStart')}
         </p>
       </div>
 
       <h3 className="mt-6 text-sm font-semibold uppercase tracking-wider text-muted">
-        This session
+        {t('sign.thisSession')}
       </h3>
       {recognized.length === 0 ? (
-        <p className="mt-2 text-muted">No signs recognized yet.</p>
+        <p className="mt-2 text-muted">{t('sign.noSignsYet')}</p>
       ) : (
         <p className="mt-2 text-lg text-ink">{recognized.join(' · ')}</p>
       )}
@@ -240,34 +232,31 @@ function RecognitionReadout({
 }
 
 function UnsupportedNotice() {
+  const t = useT();
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-line bg-surface p-6">
-      <CameraOff aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-signalInk" />
+    <div className="card flex items-start gap-3 p-6">
+      <span aria-hidden="true" className="icon-tile h-11 w-11 shrink-0">
+        <CameraOff aria-hidden="true" className="h-6 w-6" />
+      </span>
       <div>
-        <p className="font-medium text-ink">Sign recognition isn’t available here</p>
-        <p className="mt-1 text-sm text-muted">
-          It needs a modern browser with camera support, such as Chrome or Edge on a device with a
-          camera.
-        </p>
+        <p className="font-medium text-ink">{t('sign.unsupportedTitle')}</p>
+        <p className="mt-1 text-sm text-muted">{t('sign.unsupportedBody')}</p>
       </div>
     </div>
   );
 }
 
 function ModelNotTrained() {
+  const t = useT();
   return (
-    <div className="rounded-xl border border-line bg-surface p-8 text-center">
-      <Hand aria-hidden="true" className="mx-auto h-8 w-8 text-muted" />
-      <p className="mt-3 font-medium text-ink">No recognition model yet</p>
-      <p className="mx-auto mt-1 max-w-md text-sm text-muted">
-        A model hasn’t been trained for this app yet. Collect sign samples first, then run the
-        training script to enable live recognition.
-      </p>
-      <Link
-        href="/sign/collect"
-        className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-ink px-5 py-2.5 font-medium text-canvas transition hover:bg-ink/90"
-      >
-        Collect training samples
+    <div className="card p-8 text-center">
+      <span aria-hidden="true" className="icon-tile mx-auto h-11 w-11">
+        <Hand aria-hidden="true" className="h-6 w-6" />
+      </span>
+      <p className="mt-3 font-medium text-ink">{t('sign.notTrainedTitle')}</p>
+      <p className="mx-auto mt-1 max-w-md text-sm text-muted">{t('sign.notTrainedBody')}</p>
+      <Link href="/sign/collect" className="btn-primary mt-4 px-6 py-3">
+        {t('sign.collectButton')}
       </Link>
     </div>
   );

@@ -67,7 +67,11 @@ export function NavDrawer({
   return (
     <div className="lg:hidden">
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div
+        className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       {/* Panel */}
       <div
         ref={panelRef}
@@ -75,7 +79,7 @@ export function NavDrawer({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="fixed inset-y-0 left-0 z-50 flex w-[80%] max-w-xs flex-col bg-surface shadow-xl outline-none"
+        className="fixed inset-y-0 left-0 z-50 flex w-[80%] max-w-xs animate-fade-up flex-col rounded-r-2xl bg-surface shadow-lift outline-none"
       >
         {children}
       </div>

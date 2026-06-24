@@ -15,11 +15,13 @@ import {
   type ExtractedFeatures,
 } from '@/lib/sign/landmark-features';
 import { fetchSignStats, postSignSample } from '@/lib/sign/sign-api';
+import { useT } from '@/lib/i18n/use-translation';
 
 const RECOMMENDED_PER_LABEL = 40;
 const FRAME_INTERVAL_MS = 100;
 
 export default function CollectPage() {
+  const t = useT();
   const { authFetch } = useAuth();
   const { settings } = useSettings();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -111,21 +113,21 @@ export default function CollectPage() {
         const name = err instanceof DOMException ? err.name : '';
         setError(
           name === 'NotAllowedError'
-            ? 'Camera access is blocked. Allow it in your browser’s site settings, then try again.'
+            ? t('signCollect.cameraDenied')
             : name === 'NotFoundError'
-              ? 'No camera was found. Connect one and try again.'
-              : 'Could not start the camera. Please try again.',
+              ? t('signCollect.noCamera')
+              : t('signCollect.cameraError'),
         );
       }
     })();
-  }, [drawOverlay]);
+  }, [drawOverlay, t]);
 
   useEffect(() => stop, [stop]);
 
   const capture = useCallback(async () => {
     const { features, handCount } = latestRef.current;
     if (handCount === 0 || features.length === 0) {
-      setStatus('No hand detected — show your hand to the camera and try again.');
+      setStatus(t('signCollect.noHandStatus'));
       return;
     }
     try {
@@ -134,12 +136,12 @@ export default function CollectPage() {
         features,
         handCount: handCount === 2 ? 2 : 1,
       });
-      setStatus(`Captured a sample for “${displayLabel(label)}”.`);
+      setStatus(t('signCollect.capturedStatus', { label: displayLabel(label) }));
       setStats((prev) => prev.map((s) => (s.label === label ? { ...s, count: s.count + 1 } : s)));
     } catch {
-      setStatus('Could not save that sample. Please try again.');
+      setStatus(t('signCollect.saveError'));
     }
-  }, [authFetch, label]);
+  }, [authFetch, label, t]);
 
   const captureBurst = useCallback(async () => {
     for (let i = 0; i < 5; i += 1) {
@@ -153,29 +155,26 @@ export default function CollectPage() {
   const currentCount = stats.find((s) => s.label === label)?.count ?? 0;
 
   return (
-    <div>
+    <div className="animate-fade-up">
       <Link
         href="/sign"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-signalInk hover:underline"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-iris hover:underline"
       >
         <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-        Back to recognition
+        {t('signCollect.backToRecognition')}
       </Link>
 
       <PageHeader
-        title="Collect sign samples"
-        context={`Record examples of each sign to train the recognizer. Aim for at least ${RECOMMENDED_PER_LABEL} samples per label, across different lighting, angles, and signers.`}
+        title={t('signCollect.title')}
+        context={t('signCollect.context', { count: RECOMMENDED_PER_LABEL })}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section
-          aria-labelledby="collect-camera"
-          className="rounded-xl border border-line bg-surface p-4"
-        >
+        <section aria-labelledby="collect-camera" className="card p-4">
           <h2 id="collect-camera" className="sr-only">
-            Camera
+            {t('signCollect.camera')}
           </h2>
-          <div className="relative overflow-hidden rounded-lg bg-ink/90">
+          <div className="relative overflow-hidden rounded-2xl bg-ink/90 shadow-soft">
             <video ref={videoRef} playsInline muted className="aspect-video w-full object-cover" />
             <canvas
               ref={canvasRef}
@@ -191,20 +190,12 @@ export default function CollectPage() {
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {running ? (
-              <button
-                type="button"
-                onClick={stop}
-                className="inline-flex min-h-11 items-center rounded-lg border border-line px-5 py-2.5 font-medium text-ink hover:bg-canvas"
-              >
-                Stop camera
+              <button type="button" onClick={stop} className="btn-secondary">
+                {t('signCollect.stopCamera')}
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={start}
-                className="inline-flex min-h-11 items-center rounded-lg bg-ink px-5 py-2.5 font-medium text-canvas transition hover:bg-ink/90"
-              >
-                Start camera
+              <button type="button" onClick={start} className="btn-primary px-6 py-3">
+                {t('signCollect.startCamera')}
               </button>
             )}
             <span className="inline-flex items-center gap-1.5 text-sm text-muted">
@@ -212,7 +203,7 @@ export default function CollectPage() {
                 aria-hidden="true"
                 className={`h-4 w-4 ${handDetected ? 'text-bridge' : 'text-muted'}`}
               />
-              {handDetected ? 'Hand detected' : 'No hand detected'}
+              {handDetected ? t('signCollect.handDetected') : t('signCollect.noHandDetected')}
             </span>
           </div>
 
@@ -224,22 +215,19 @@ export default function CollectPage() {
           )}
         </section>
 
-        <section
-          aria-labelledby="collect-controls"
-          className="rounded-xl border border-line bg-surface p-6"
-        >
+        <section aria-labelledby="collect-controls" className="card p-6">
           <h2 id="collect-controls" className="font-display text-xl font-semibold text-ink">
-            Capture
+            {t('signCollect.capture')}
           </h2>
 
           <label htmlFor="label-select" className="mt-4 block text-sm font-medium text-ink">
-            Sign label
+            {t('signCollect.signLabel')}
           </label>
           <select
             id="label-select"
             value={label}
             onChange={(e) => setLabel(e.target.value as IslLabel)}
-            className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink"
+            className="mt-1 w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink transition focus:border-signal"
           >
             {ISL_VOCABULARY.map((l) => (
               <option key={l} value={l}>
@@ -248,7 +236,11 @@ export default function CollectPage() {
             ))}
           </select>
           <p className="mt-1 text-sm text-muted">
-            {currentCount} / {RECOMMENDED_PER_LABEL} samples for “{displayLabel(label)}”.
+            {t('signCollect.sampleCount', {
+              current: currentCount,
+              total: RECOMMENDED_PER_LABEL,
+              label: displayLabel(label),
+            })}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-3">
@@ -256,17 +248,17 @@ export default function CollectPage() {
               type="button"
               onClick={() => void capture()}
               disabled={!running}
-              className="inline-flex min-h-11 items-center rounded-lg bg-signal px-5 py-2.5 font-medium text-surface transition hover:bg-signalInk disabled:opacity-60"
+              className="btn-primary px-6 py-3 disabled:opacity-60"
             >
-              Capture
+              {t('signCollect.captureButton')}
             </button>
             <button
               type="button"
               onClick={() => void captureBurst()}
               disabled={!running}
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-5 py-2.5 font-medium text-ink hover:bg-canvas disabled:opacity-60"
+              className="btn-secondary disabled:opacity-60"
             >
-              Capture 5
+              {t('signCollect.captureBurst')}
             </button>
           </div>
 
@@ -275,7 +267,7 @@ export default function CollectPage() {
           </p>
 
           <h3 className="mt-6 text-sm font-semibold uppercase tracking-wider text-muted">
-            Coverage
+            {t('signCollect.coverage')}
           </h3>
           <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
             {stats.map((s) => (

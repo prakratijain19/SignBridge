@@ -5,14 +5,18 @@ import Link from 'next/link';
 import { Trash2, MessageSquare } from 'lucide-react';
 import type { ConversationSummary } from '@signbridge/shared-types';
 import { useAuth } from '@/lib/auth-context';
+import { useT, type TFunction } from '@/lib/i18n/use-translation';
 import { PageHeader } from '@/components/PageHeader';
 import { deleteConversation, listConversations } from '@/lib/conversations-api';
 
-const MODE_LABEL: Record<string, string> = {
-  SPEECH: 'Speech',
-  LIVE: 'Live',
-  VIDEO: 'Video',
-};
+function modeLabel(t: TFunction, mode: string): string {
+  const map: Record<string, string> = {
+    SPEECH: t('history.mode.SPEECH'),
+    LIVE: t('history.mode.LIVE'),
+    VIDEO: t('history.mode.VIDEO'),
+  };
+  return map[mode] ?? mode;
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -23,6 +27,7 @@ function formatDate(iso: string): string {
 
 export default function HistoryPage() {
   const { authFetch } = useAuth();
+  const t = useT();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,29 +39,29 @@ export default function HistoryPage() {
       const { conversations: list } = await listConversations(authFetch);
       setConversations(list);
     } catch {
-      setError('Could not load your conversations. Please try again.');
+      setError(t('history.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [authFetch]);
+  }, [authFetch, t]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   async function handleDelete(id: string) {
-    if (!window.confirm('Delete this conversation? This cannot be undone.')) return;
+    if (!window.confirm(t('history.deleteConfirm'))) return;
     try {
       await deleteConversation(authFetch, id);
       setConversations((prev) => prev.filter((c) => c.id !== id));
     } catch {
-      setError('Could not delete that conversation. Please try again.');
+      setError(t('history.deleteError'));
     }
   }
 
   return (
-    <div>
-      <PageHeader title="History" context="Your saved conversations and transcripts." />
+    <div className="animate-fade-up">
+      <PageHeader title={t('history.title')} context={t('history.context')} />
 
       {error && (
         <p role="alert" className="mb-4 text-sm text-beacon">
@@ -66,18 +71,20 @@ export default function HistoryPage() {
 
       {loading ? (
         <p className="text-muted" aria-busy="true">
-          Loading…
+          {t('history.loading')}
         </p>
       ) : conversations.length === 0 ? (
-        <div className="rounded-xl border border-line bg-surface p-8 text-center">
-          <MessageSquare aria-hidden="true" className="mx-auto h-8 w-8 text-muted" />
-          <p className="mt-3 font-medium text-ink">No conversations yet</p>
+        <div className="card p-8 text-center">
+          <div aria-hidden="true" className="icon-tile mx-auto h-12 w-12">
+            <MessageSquare className="h-6 w-6" />
+          </div>
+          <p className="mt-3 font-medium text-ink">{t('history.empty')}</p>
           <p className="mt-1 text-sm text-muted">
-            Start one on the{' '}
+            {t('history.emptyStartPrefix')}{' '}
             <Link href="/speech" className="font-medium text-signalInk underline">
-              Speech
+              {t('history.emptySpeechLink')}
             </Link>{' '}
-            page.
+            {t('history.emptyStartSuffix')}
           </p>
         </div>
       ) : (
@@ -85,25 +92,35 @@ export default function HistoryPage() {
           {conversations.map((c) => (
             <li
               key={c.id}
-              className="flex items-center justify-between gap-4 rounded-xl border border-line bg-surface p-4"
+              className="card card-hover group flex items-center justify-between gap-4 p-4"
             >
-              <Link href={`/history/${c.id}`} className="min-w-0 flex-1 rounded">
-                <span className="flex items-center gap-2">
-                  <span className="font-medium text-ink">{c.title ?? formatDate(c.createdAt)}</span>
-                  <span className="rounded-full border border-line bg-canvas px-2 py-0.5 text-xs font-medium text-muted">
-                    {MODE_LABEL[c.mode] ?? c.mode}
-                  </span>
+              <Link
+                href={`/history/${c.id}`}
+                className="flex min-w-0 flex-1 items-center gap-3 rounded"
+              >
+                <span aria-hidden="true" className="icon-tile h-10 w-10 shrink-0">
+                  <MessageSquare className="h-5 w-5" />
                 </span>
-                <span className="mt-1 block truncate text-sm text-muted">
-                  {c.lastMessagePreview ?? 'No messages'} · {c.messageCount}{' '}
-                  {c.messageCount === 1 ? 'message' : 'messages'}
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="font-medium text-ink">
+                      {c.title ?? formatDate(c.createdAt)}
+                    </span>
+                    <span className="chip">{modeLabel(t, c.mode)}</span>
+                  </span>
+                  <span className="mt-1 block truncate text-sm text-muted">
+                    {c.lastMessagePreview ?? t('history.noMessages')} · {c.messageCount}{' '}
+                    {c.messageCount === 1 ? t('history.messageOne') : t('history.messageOther')}
+                  </span>
                 </span>
               </Link>
               <button
                 type="button"
                 onClick={() => handleDelete(c.id)}
-                aria-label={`Delete conversation ${c.title ?? formatDate(c.createdAt)}`}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-canvas hover:text-beacon"
+                aria-label={t('history.deleteAria', {
+                  title: c.title ?? formatDate(c.createdAt),
+                })}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-canvas hover:text-beacon"
               >
                 <Trash2 aria-hidden="true" className="h-5 w-5" />
               </button>

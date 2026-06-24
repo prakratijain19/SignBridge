@@ -16,6 +16,17 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(1).optional(),
   ACCESS_TOKEN_TTL: z.string().default('15m'),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  // Translation provider. Defaults to google-free below (works with no config);
+  // bhashini and identity remain selectable via this var.
+  TRANSLATION_PROVIDER: z.enum(['google-free', 'bhashini', 'identity']).optional(),
+  BHASHINI_USER_ID: z.string().optional(),
+  BHASHINI_API_KEY: z.string().optional(),
+  BHASHINI_PIPELINE_ID: z.string().default('64392f96daac500b55c543cd'),
+  // WebRTC ICE. Public STUN is always used; TURN is optional (needed only for
+  // cross-network calls). Same-network/localhost works with STUN alone.
+  TURN_URL: z.string().optional(),
+  TURN_USERNAME: z.string().optional(),
+  TURN_CREDENTIAL: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -53,10 +64,23 @@ if (!JWT_ACCESS_SECRET || !JWT_REFRESH_SECRET) {
   JWT_REFRESH_SECRET ??= DEV_FALLBACK_REFRESH_SECRET;
 }
 
+// Resolve the translation provider: explicit env wins; otherwise default to the
+// free, keyless google-free provider so translation works out of the box.
+const translationProvider = parsed.data.TRANSLATION_PROVIDER ?? 'google-free';
+
+if (translationProvider === 'identity') {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[env] Translation provider is "identity" (passthrough) — no real translation ' +
+      'will be performed. Use "google-free" (default) or configure Bhashini.',
+  );
+}
+
 export const env = {
   ...parsed.data,
   JWT_ACCESS_SECRET,
   JWT_REFRESH_SECRET,
+  TRANSLATION_PROVIDER: translationProvider,
   corsOrigins: parsed.data.CORS_ORIGIN.split(',').map((o) => o.trim()),
   isProduction,
 };

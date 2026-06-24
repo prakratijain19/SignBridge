@@ -9,6 +9,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { useSpeechToText } from '@/lib/speech/use-speech-to-text';
 import { useTextToSpeech } from '@/lib/speech/use-text-to-speech';
 import { addMessage, createConversation } from '@/lib/conversations-api';
+import { useT } from '@/lib/i18n/use-translation';
+import type { TFunction } from '@/lib/i18n/use-translation';
 
 const LANGUAGES: { value: LanguageCode; label: string }[] = [
   { value: 'en', label: 'English' },
@@ -17,25 +19,26 @@ const LANGUAGES: { value: LanguageCode; label: string }[] = [
 ];
 
 /** Maps a recognition error code to clear, recovery-oriented guidance. */
-function recognitionErrorMessage(code: string): string {
+function recognitionErrorMessage(t: TFunction, code: string): string {
   switch (code) {
     case 'not-supported':
-      return 'Live transcription needs Chrome or Edge.';
+      return t('speech.error.notSupported');
     case 'not-allowed':
     case 'service-not-allowed':
-      return 'Microphone access is blocked. Allow it in your browser’s site settings, then try again.';
+      return t('speech.error.notAllowed');
     case 'audio-capture':
-      return 'No microphone found. Connect one and try again.';
+      return t('speech.error.audioCapture');
     case 'no-speech':
-      return 'No speech detected. Press the mic and try again.';
+      return t('speech.error.noSpeech');
     case 'network':
-      return 'Network problem during transcription. Check your connection and retry.';
+      return t('speech.error.network');
     default:
-      return `Transcription stopped (${code}). Press the mic to try again.`;
+      return t('speech.error.default', { code });
   }
 }
 
 export default function SpeechPage() {
+  const t = useT();
   const { authFetch } = useAuth();
   const { settings } = useSettings();
 
@@ -82,10 +85,10 @@ export default function SpeechPage() {
         });
         setSessionMessages((prev) => [...prev, message]);
       } catch {
-        setSaveError('Could not save that line. Your transcript may be incomplete.');
+        setSaveError(t('speech.saveError'));
       }
     },
-    [authFetch, ensureConversation],
+    [authFetch, ensureConversation, t],
   );
 
   const handleFinal = useCallback(
@@ -114,22 +117,19 @@ export default function SpeechPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Speech"
-        context="Turn speech into text, or type a message and have it spoken aloud."
-      />
+    <div className="animate-fade-up">
+      <PageHeader title={t('speech.title')} context={t('speech.context')} />
 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <label htmlFor="speech-lang" className="block text-sm font-medium text-ink">
-            Language
+            {t('speech.language')}
           </label>
           <select
             id="speech-lang"
             value={lang}
             onChange={(e) => changeLanguage(e.target.value as LanguageCode)}
-            className="mt-1 rounded-lg border border-line bg-surface px-3 py-2 text-ink"
+            className="mt-1 rounded-xl border border-line bg-surface px-3 py-2 text-ink transition focus:border-signal"
           >
             {LANGUAGES.map((l) => (
               <option key={l.value} value={l.value}>
@@ -138,13 +138,9 @@ export default function SpeechPage() {
             ))}
           </select>
         </div>
-        <button
-          type="button"
-          onClick={newSession}
-          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-medium text-ink hover:bg-canvas"
-        >
+        <button type="button" onClick={newSession} className="btn-secondary">
           <Plus aria-hidden="true" className="h-4 w-4" />
-          New session
+          {t('speech.newSession')}
         </button>
       </div>
 
@@ -152,7 +148,7 @@ export default function SpeechPage() {
         <SpeakToText
           stt={stt}
           reduceMotion={settings.reduceMotion}
-          errorMessage={stt.error ? recognitionErrorMessage(stt.error) : null}
+          errorMessage={stt.error ? recognitionErrorMessage(t, stt.error) : null}
         />
         <TypeToSpeech lang={lang} tts={tts} onSave={(text) => persistMessage(text, 'TEXT', lang)} />
       </div>
@@ -177,21 +173,19 @@ function SpeakToText({
   reduceMotion: boolean;
   errorMessage: string | null;
 }) {
-  const statusText = stt.isListening ? 'Listening…' : 'Microphone off';
+  const t = useT();
+  const statusText = stt.isListening ? t('speech.listening') : t('speech.micOff');
 
   return (
-    <section aria-labelledby="stt-heading" className="rounded-xl border border-line bg-surface p-6">
+    <section aria-labelledby="stt-heading" className="card p-6">
       <h2 id="stt-heading" className="font-display text-xl font-semibold text-ink">
-        Speak → text
+        {t('speech.speakToText')}
       </h2>
 
       {!stt.supported ? (
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-line bg-canvas p-4 text-sm text-ink">
-          <AlertCircle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-signalInk" />
-          <p>
-            Live transcription needs Chrome or Edge. You can still type a message and have it spoken
-            below.
-          </p>
+        <div className="mt-4 flex items-start gap-2 rounded-xl bg-aurora-soft p-4 text-sm text-ink">
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-iris" />
+          <p>{t('speech.sttUnsupported')}</p>
         </div>
       ) : (
         <div className="mt-4 flex flex-col items-center gap-3">
@@ -199,11 +193,11 @@ function SpeakToText({
             type="button"
             onClick={() => (stt.isListening ? stt.stop() : stt.start())}
             aria-pressed={stt.isListening}
-            aria-label={stt.isListening ? 'Stop listening' : 'Start listening'}
+            aria-label={stt.isListening ? t('speech.stopListening') : t('speech.startListening')}
             className={`flex h-20 w-20 items-center justify-center rounded-full border-2 transition ${
               stt.isListening
                 ? 'border-beacon bg-beacon/10 text-beacon'
-                : 'border-signal bg-signal text-surface hover:bg-signalInk'
+                : 'border-transparent bg-aurora text-white shadow-glow hover:shadow-lift'
             } ${stt.isListening && !reduceMotion ? 'animate-pulse' : ''}`}
           >
             {stt.isListening ? (
@@ -238,16 +232,14 @@ function SpeakToText({
           Text scales with the user's text-size preference (rem-based sizing). */}
       <div
         aria-live="polite"
-        aria-label="Live transcript"
-        className="mt-4 min-h-24 rounded-lg border border-line bg-canvas p-4 text-xl leading-relaxed text-ink"
+        aria-label={t('speech.liveTranscript')}
+        className="mt-4 min-h-24 rounded-xl border border-line bg-canvas p-4 text-xl leading-relaxed text-ink"
       >
         {stt.finalText && <span>{stt.finalText} </span>}
         {stt.interimText && <span className="text-muted">{stt.interimText}</span>}
         {!stt.finalText && !stt.interimText && (
           <span className="text-base text-muted">
-            {stt.supported
-              ? 'Press the mic and start speaking — your words appear here.'
-              : 'Transcription is unavailable in this browser.'}
+            {stt.supported ? t('speech.transcriptPlaceholder') : t('speech.transcriptUnavailable')}
           </span>
         )}
       </div>
@@ -264,6 +256,7 @@ function TypeToSpeech({
   tts: ReturnType<typeof useTextToSpeech>;
   onSave: (text: string) => void;
 }) {
+  const t = useT();
   const [text, setText] = useState('');
   const [voiceNote, setVoiceNote] = useState<string | null>(null);
 
@@ -273,57 +266,53 @@ function TypeToSpeech({
     setVoiceNote(null);
     const { matchedLanguage } = await tts.speak(trimmed, { lang });
     if (!matchedLanguage) {
-      setVoiceNote('No voice is installed for this language, so a default voice was used.');
+      setVoiceNote(t('speech.noVoice'));
     }
     onSave(trimmed);
   }
 
   return (
-    <section aria-labelledby="tts-heading" className="rounded-xl border border-line bg-surface p-6">
+    <section aria-labelledby="tts-heading" className="card p-6">
       <h2 id="tts-heading" className="font-display text-xl font-semibold text-ink">
-        Type → speech
+        {t('speech.typeToSpeech')}
       </h2>
 
       {!tts.supported ? (
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-line bg-canvas p-4 text-sm text-ink">
-          <AlertCircle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-signalInk" />
-          <p>Text-to-speech isn’t available in this browser.</p>
+        <div className="mt-4 flex items-start gap-2 rounded-xl bg-aurora-soft p-4 text-sm text-ink">
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-iris" />
+          <p>{t('speech.ttsUnsupported')}</p>
         </div>
       ) : (
         <>
           <label htmlFor="tts-text" className="mt-4 block text-sm font-medium text-ink">
-            Message to speak
+            {t('speech.messageToSpeak')}
           </label>
           <textarea
             id="tts-text"
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={4}
-            className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink"
-            placeholder="Type something to say aloud…"
+            className="mt-1 w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink transition focus:border-signal"
+            placeholder={t('speech.messagePlaceholder')}
           />
           <div className="mt-3 flex items-center gap-3">
             <button
               type="button"
               onClick={handleSpeak}
               disabled={!text.trim()}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-ink px-5 py-2.5 font-medium text-canvas transition hover:bg-ink/90 disabled:opacity-60"
+              className="btn-primary disabled:opacity-60"
             >
               <Volume2 aria-hidden="true" className="h-5 w-5" />
-              Speak
+              {t('speech.speak')}
             </button>
             {tts.speaking && (
-              <button
-                type="button"
-                onClick={tts.cancel}
-                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-canvas"
-              >
+              <button type="button" onClick={tts.cancel} className="btn-secondary">
                 <Square aria-hidden="true" className="h-4 w-4" />
-                Stop
+                {t('speech.stop')}
               </button>
             )}
             <span aria-live="polite" className="text-sm text-muted">
-              {tts.speaking ? 'Speaking…' : ''}
+              {tts.speaking ? t('speech.speaking') : ''}
             </span>
           </div>
           {voiceNote && (
@@ -337,14 +326,15 @@ function TypeToSpeech({
   );
 }
 
-const MODALITY_LABEL: Record<MessageModality, string> = {
-  SPEECH: 'Spoken',
-  TEXT: 'Typed',
-  SIGN: 'Signed',
-  AVATAR: 'Avatar',
+const MODALITY_KEY: Record<MessageModality, string> = {
+  SPEECH: 'speech.modality.spoken',
+  TEXT: 'speech.modality.typed',
+  SIGN: 'speech.modality.signed',
+  AVATAR: 'speech.modality.avatar',
 };
 
 function SessionTranscript({ messages, hasSession }: { messages: Message[]; hasSession: boolean }) {
+  const t = useT();
   const ordered = useMemo(() => messages, [messages]);
 
   return (
@@ -353,20 +343,18 @@ function SessionTranscript({ messages, hasSession }: { messages: Message[]; hasS
         id="session-heading"
         className="text-sm font-semibold uppercase tracking-wider text-muted"
       >
-        This session
+        {t('speech.thisSession')}
       </h2>
       {ordered.length === 0 ? (
         <p className="mt-3 text-muted">
-          {hasSession
-            ? 'No lines saved yet.'
-            : 'Start speaking or speak a typed message to begin a session.'}
+          {hasSession ? t('speech.noLinesSaved') : t('speech.sessionEmpty')}
         </p>
       ) : (
         <ul className="mt-3 space-y-2">
           {ordered.map((m) => (
-            <li key={m.id} className="rounded-lg border border-line bg-surface p-3">
+            <li key={m.id} className="card p-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                {MODALITY_LABEL[m.modality]} · {m.language.toUpperCase()}
+                {t(MODALITY_KEY[m.modality])} · {m.language.toUpperCase()}
               </p>
               <p className="mt-1 text-ink">{m.content}</p>
             </li>

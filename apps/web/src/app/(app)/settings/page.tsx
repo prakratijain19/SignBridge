@@ -3,22 +3,25 @@
 import { useState } from 'react';
 import type { LanguageCode, TextScale } from '@signbridge/shared-types';
 import { useSettings } from '@/lib/settings-context';
+import { useT } from '@/lib/i18n/use-translation';
 import { PageHeader } from '@/components/PageHeader';
 
+// Language names are shown in their own script, so they are intentionally not translated.
 const LANGUAGES: { value: LanguageCode; label: string }[] = [
   { value: 'en', label: 'English' },
   { value: 'hi', label: 'हिन्दी (Hindi)' },
   { value: 'gu', label: 'ગુજરાતી (Gujarati)' },
 ];
 
-const TEXT_SIZES: { value: TextScale; label: string }[] = [
-  { value: 'NORMAL', label: 'Normal' },
-  { value: 'LARGE', label: 'Large' },
-  { value: 'LARGER', label: 'Larger' },
+const TEXT_SIZES: { value: TextScale; labelKey: string }[] = [
+  { value: 'NORMAL', labelKey: 'settings.size.normal' },
+  { value: 'LARGE', labelKey: 'settings.size.large' },
+  { value: 'LARGER', labelKey: 'settings.size.larger' },
 ];
 
 export default function SettingsPage() {
   const { settings, updateSettings } = useSettings();
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
 
   async function change<K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) {
@@ -26,16 +29,13 @@ export default function SettingsPage() {
     try {
       await updateSettings({ [key]: value });
     } catch {
-      setError('Could not save that change. Please try again.');
+      setError(t('settings.saveError'));
     }
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Settings"
-        context="Tune SignBridge to work the way you do. Changes apply right away and are saved to your account."
-      />
+    <div className="animate-fade-up">
+      <PageHeader title={t('settings.title')} context={t('settings.subtitle')} />
 
       {error && (
         <p
@@ -47,19 +47,17 @@ export default function SettingsPage() {
       )}
 
       <div className="space-y-8">
-        <section className="rounded-xl border border-line bg-surface p-6">
-          <h2 className="font-display text-xl font-semibold text-ink">Language</h2>
+        <section className="card p-6">
+          <h2 className="font-display text-xl font-semibold text-ink">{t('settings.language')}</h2>
           <div className="mt-4 max-w-sm">
-            {/* i18n: Phase 7 — this preference sets <html lang> now; full UI string
-                translation hooks in with the multilingual engine. */}
             <label htmlFor="language" className="block text-sm font-medium text-ink">
-              Interface language
+              {t('settings.interfaceLanguage')}
             </label>
             <select
               id="language"
               value={settings.interfaceLanguage}
               onChange={(e) => change('interfaceLanguage', e.target.value as LanguageCode)}
-              className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink"
+              className="mt-1 w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink transition focus:border-signal"
             >
               {LANGUAGES.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -67,18 +65,20 @@ export default function SettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-sm text-muted">
-              Full translation of the interface arrives in a later phase.
-            </p>
+            <p className="mt-1 text-sm text-muted">{t('settings.languageNote')}</p>
           </div>
         </section>
 
-        <section className="rounded-xl border border-line bg-surface p-6">
-          <h2 className="font-display text-xl font-semibold text-ink">Display</h2>
+        <section className="card p-6">
+          <h2 className="font-display text-xl font-semibold text-ink">{t('settings.display')}</h2>
 
           <fieldset className="mt-4">
-            <legend className="text-sm font-medium text-ink">Text size</legend>
-            <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Text size">
+            <legend className="text-sm font-medium text-ink">{t('settings.textSize')}</legend>
+            <div
+              className="mt-2 flex flex-wrap gap-2"
+              role="radiogroup"
+              aria-label={t('settings.textSize')}
+            >
               {TEXT_SIZES.map((size) => {
                 const active = settings.textScale === size.value;
                 return (
@@ -88,13 +88,13 @@ export default function SettingsPage() {
                     role="radio"
                     aria-checked={active}
                     onClick={() => change('textScale', size.value)}
-                    className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                    className={`min-h-11 rounded-xl border px-4 py-2 text-sm font-medium transition ${
                       active
-                        ? 'border-signal bg-canvas text-signalInk'
+                        ? 'border-signal/20 bg-aurora-soft text-signalInk ring-1 ring-inset ring-signal/20'
                         : 'border-line bg-surface text-ink hover:bg-canvas'
                     }`}
                   >
-                    {size.label}
+                    {t(size.labelKey)}
                   </button>
                 );
               })}
@@ -103,20 +103,20 @@ export default function SettingsPage() {
 
           <div className="mt-6 divide-y divide-line border-t border-line">
             <ToggleRow
-              label="High contrast"
-              description="Stronger borders and higher-contrast text."
+              label={t('settings.highContrast')}
+              description={t('settings.highContrastDesc')}
               checked={settings.highContrast}
               onChange={(v) => change('highContrast', v)}
             />
             <ToggleRow
-              label="Reduce motion"
-              description="Minimise animations and transitions across the app."
+              label={t('settings.reduceMotion')}
+              description={t('settings.reduceMotionDesc')}
               checked={settings.reduceMotion}
               onChange={(v) => change('reduceMotion', v)}
             />
             <ToggleRow
-              label="Captions"
-              description="Show captions in conversations and calls (used by later features)."
+              label={t('settings.captions')}
+              description={t('settings.captionsDesc')}
               checked={settings.captionsEnabled}
               onChange={(v) => change('captionsEnabled', v)}
             />
@@ -151,7 +151,7 @@ function ToggleRow({
         aria-label={label}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition ${
-          checked ? 'border-bridge bg-bridge' : 'border-line bg-canvas'
+          checked ? 'border-transparent bg-aurora shadow-glow' : 'border-line bg-canvas'
         }`}
       >
         <span

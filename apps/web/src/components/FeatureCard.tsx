@@ -22,7 +22,7 @@ export function FeatureCard({
   const body = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-canvas text-signalInk">
+        <span className="icon-tile h-11 w-11 transition group-hover:scale-105">
           <Icon aria-hidden="true" className="h-5 w-5" />
         </span>
         {comingSoon && (
@@ -30,7 +30,12 @@ export function FeatureCard({
             Coming soon
           </span>
         )}
-        {href && !comingSoon && <ArrowRight aria-hidden="true" className="h-5 w-5 text-muted" />}
+        {href && !comingSoon && (
+          <ArrowRight
+            aria-hidden="true"
+            className="h-5 w-5 text-muted transition group-hover:translate-x-1 group-hover:text-signalInk"
+          />
+        )}
       </div>
       <h3 className="mt-4 font-display text-lg font-semibold text-ink">{title}</h3>
       <p className="mt-1 text-sm text-muted">{description}</p>
@@ -39,20 +44,14 @@ export function FeatureCard({
 
   if (href && !comingSoon) {
     return (
-      <Link
-        href={href}
-        className="flex h-full flex-col rounded-xl border border-line bg-surface p-5 transition hover:border-signal hover:bg-canvas"
-      >
+      <Link href={href} className="card card-hover group flex h-full flex-col p-5">
         {body}
       </Link>
     );
   }
 
   return (
-    <div
-      className="flex h-full flex-col rounded-xl border border-line bg-surface p-5"
-      aria-disabled={comingSoon || undefined}
-    >
+    <div className="card flex h-full flex-col p-5" aria-disabled={comingSoon || undefined}>
       {body}
     </div>
   );

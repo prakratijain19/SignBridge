@@ -22,12 +22,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 import urllib.request
 from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
-import tensorflowjs as tfjs
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 
@@ -148,6 +148,7 @@ def main() -> int:
     }
 
     model = build_model(FEATURE_LENGTH, len(labels))
+    started = time.time()
     model.fit(
         x_train,
         y_train,
@@ -157,9 +158,11 @@ def main() -> int:
         class_weight=class_weight,
         verbose=2,
     )
+    elapsed = time.time() - started
 
     loss, acc = model.evaluate(x_val, y_val, verbose=0)
     print(f"\nValidation accuracy: {acc:.3f} (loss {loss:.3f})")
+    print(f"Training time: {elapsed:.1f}s on CPU ({args.epochs} epochs).")
 
     preds = np.argmax(model.predict(x_val, verbose=0), axis=1)
     print("\nConfusion matrix (rows = true, cols = predicted):")
@@ -168,10 +171,35 @@ def main() -> int:
 
     out_dir: Path = args.out
     out_dir.mkdir(parents=True, exist_ok=True)
-    tfjs.converters.save_keras_model(model, str(out_dir))
+
+    # Export plain weights JSON (no tensorflowjs dependency). The browser rebuilds
+    # the same MLP in TF.js and calls setWeights() with these arrays in order.
+    # Dropout layers carry no weights and are skipped; each Dense layer contributes
+    # one { units, activation, W (2D), b (1D) } entry.
+    exported_layers = []
+    for layer in model.layers:
+        layer_weights = layer.get_weights()
+        if len(layer_weights) != 2:
+            continue  # input/dropout layers have no trainable weights
+        kernel, bias = layer_weights
+        exported_layers.append(
+            {
+                "units": int(layer.units),
+                "activation": tf.keras.activations.serialize(layer.activation),
+                "W": kernel.tolist(),
+                "b": bias.tolist(),
+            }
+        )
+
+    weights_payload = {
+        "featureLength": FEATURE_LENGTH,
+        "labels": labels,
+        "layers": exported_layers,
+    }
+    (out_dir / "weights.json").write_text(json.dumps(weights_payload), encoding="utf-8")
     (out_dir / "labels.json").write_text(json.dumps(labels), encoding="utf-8")
 
-    print(f"\nExported TensorFlow.js model + labels.json to {out_dir}")
+    print(f"\nExported weights.json + labels.json to {out_dir}")
     print("Refresh the /sign page in the web app to load it.")
     return 0
 

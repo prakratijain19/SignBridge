@@ -1,19 +1,59 @@
 'use client';
 
-import { Mic, Hand, GraduationCap, Siren, Video } from 'lucide-react';
+import Link from 'next/link';
+import {
+  Mic,
+  Hand,
+  Users,
+  Languages,
+  PersonStanding,
+  GraduationCap,
+  Siren,
+  Video,
+  ArrowRight,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useT } from '@/lib/i18n/use-translation';
 import { PageHeader } from '@/components/PageHeader';
 import { FeatureCard } from '@/components/FeatureCard';
 
+const MODULES: { icon: LucideIcon; titleKey: string; descKey: string; href: string }[] = [
+  { icon: Users, titleKey: 'nav.live', descKey: 'dash.card.live.desc', href: '/live' },
+  { icon: Mic, titleKey: 'nav.speech', descKey: 'dash.card.speech.desc', href: '/speech' },
+  { icon: Hand, titleKey: 'nav.sign', descKey: 'dash.card.sign.desc', href: '/sign' },
+  {
+    icon: Languages,
+    titleKey: 'nav.translate',
+    descKey: 'dash.card.translate.desc',
+    href: '/translate',
+  },
+  {
+    icon: PersonStanding,
+    titleKey: 'nav.avatar',
+    descKey: 'dash.card.avatar.desc',
+    href: '/avatar',
+  },
+  { icon: GraduationCap, titleKey: 'nav.learn', descKey: 'dash.card.learn.desc', href: '/learn' },
+  {
+    icon: Siren,
+    titleKey: 'nav.emergency',
+    descKey: 'dash.card.emergency.desc',
+    href: '/emergency',
+  },
+  { icon: Video, titleKey: 'nav.call', descKey: 'dash.card.video.desc', href: '/call' },
+];
+
 export default function DashboardPage() {
   const { user } = useAuth();
+  const t = useT();
   const firstName = user?.name?.split(' ')[0];
 
   return (
     <div>
       <PageHeader
-        title={firstName ? `Welcome, ${firstName}` : 'Welcome'}
-        context="Your bridge to clear communication. Pick up where you left off or start something new."
+        title={firstName ? t('dash.welcomeName', { name: firstName }) : t('dash.welcome')}
+        context={t('dash.intro')}
       />
 
       <StartConversationHero />
@@ -23,39 +63,18 @@ export default function DashboardPage() {
           id="modules-heading"
           className="text-sm font-semibold uppercase tracking-wider text-muted"
         >
-          Modules
+          {t('dash.modules')}
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard
-            icon={Mic}
-            title="Speech"
-            description="Transcribe speech to text and speak typed messages aloud."
-            href="/speech"
-          />
-          <FeatureCard
-            icon={Hand}
-            title="Sign recognition"
-            description="Recognize Indian Sign Language signs from your camera as text."
-            href="/sign"
-          />
-          <FeatureCard
-            icon={GraduationCap}
-            title="Learn ISL"
-            description="Practice Indian Sign Language with guided lessons."
-            comingSoon
-          />
-          <FeatureCard
-            icon={Siren}
-            title="Emergency"
-            description="Fast, clear communication when every second counts."
-            comingSoon
-          />
-          <FeatureCard
-            icon={Video}
-            title="Video call"
-            description="Face-to-face calls with live captions and interpretation."
-            comingSoon
-          />
+          {MODULES.map((m) => (
+            <FeatureCard
+              key={m.href}
+              icon={m.icon}
+              title={t(m.titleKey)}
+              description={t(m.descKey)}
+              href={m.href}
+            />
+          ))}
         </div>
       </section>
     </div>
@@ -69,30 +88,30 @@ export default function DashboardPage() {
  * so it is clearly marked rather than linking nowhere.
  */
 function StartConversationHero() {
+  const t = useT();
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative overflow-hidden rounded-2xl border border-line bg-ink px-6 py-10 text-canvas sm:px-10"
+      className="relative overflow-hidden rounded-3xl border border-line bg-ink px-6 py-12 text-canvas shadow-lift sm:px-10"
     >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-hero-mesh" />
       <BridgeMotif />
-      <div className="relative max-w-xl">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-canvas/70">Start here</p>
-        <h2 id="hero-heading" className="mt-2 font-display text-3xl font-semibold sm:text-4xl">
-          Start a conversation
+      <div className="relative max-w-xl animate-fade-up">
+        <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-canvas/90 backdrop-blur-sm">
+          {t('dash.hero.kicker')}
+        </span>
+        <h2 id="hero-heading" className="mt-4 font-display text-3xl font-semibold sm:text-5xl">
+          {t('dash.hero.title')}
         </h2>
-        <p className="mt-3 text-canvas/80">
-          Bridge sign, speech, and text in real time — so everyone in the room can follow along.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            className="inline-flex min-h-11 items-center rounded-lg bg-signal px-5 py-2.5 font-medium text-surface opacity-70"
+        <p className="mt-3 max-w-md text-canvas/80">{t('dash.hero.body')}</p>
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <Link
+            href="/live"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 py-2.5 font-semibold text-ink shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift"
           >
-            Start a conversation
-          </button>
-          <span className="text-sm text-canvas/70">Opens in a later phase.</span>
+            {t('dash.hero.cta')}
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>

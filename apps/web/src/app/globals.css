@@ -29,6 +29,12 @@ body {
   font-family: var(--font-sans);
   font-size: 1rem; /* >= 16px baseline */
   line-height: 1.5;
+  /* Subtle aurora mesh so the warm canvas never reads as flat grey. */
+  background-image:
+    radial-gradient(48% 38% at 8% 0%, rgba(47, 109, 246, 0.08) 0%, transparent 60%),
+    radial-gradient(42% 36% at 100% 6%, rgba(109, 94, 252, 0.07) 0%, transparent 60%),
+    radial-gradient(50% 45% at 90% 100%, rgba(15, 157, 138, 0.07) 0%, transparent 60%);
+  background-attachment: fixed;
 }
 
 h1,
@@ -36,6 +42,84 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
+}
+
+/* -------------------------------------------------------------------------
+   Reusable visual language (vibrant + modern). Components opt in via these
+   classes so the look stays consistent app-wide. All of them degrade safely
+   under high-contrast and reduced-motion (see overrides further down).
+   ------------------------------------------------------------------------- */
+@layer components {
+  /* Surface card: soft shadow, hairline, and a gentle lift on hover. */
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-soft transition duration-200;
+  }
+  .card-hover {
+    @apply hover:-translate-y-0.5 hover:border-signal/40 hover:shadow-lift;
+  }
+
+  /* Gradient text for headings / emphasis. */
+  .text-gradient {
+    @apply bg-aurora bg-clip-text text-transparent;
+    background-size: 200% 200%;
+  }
+
+  /* Primary action: aurora gradient with a coloured glow. */
+  .btn-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-aurora bg-[length:200%_200%] px-5 py-2.5 font-medium text-white shadow-glow transition duration-200 hover:bg-right hover:shadow-lift focus-visible:bg-right;
+  }
+
+  /* Secondary action: clean surface button. */
+  .btn-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-5 py-2.5 font-medium text-ink shadow-soft transition duration-200 hover:-translate-y-0.5 hover:border-signal/40 hover:shadow-lift;
+  }
+
+  /* Pill chip used for kickers / tags. */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/70 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-signalInk;
+  }
+
+  /* Frosted-glass bar (nav / sticky headers). */
+  .glass {
+    @apply border-line/70 bg-surface/80 backdrop-blur-md backdrop-saturate-150;
+  }
+
+  /* Icon tile with a soft aurora wash. */
+  .icon-tile {
+    @apply inline-flex items-center justify-center rounded-xl bg-aurora-soft text-signalInk ring-1 ring-inset ring-signal/10;
+  }
+}
+
+/* High-contrast: strip gradients, translucency, and blur for crisp edges. */
+html[data-contrast='high'] body {
+  background-image: none;
+}
+html[data-contrast='high'] .text-gradient {
+  -webkit-text-fill-color: currentColor;
+  @apply bg-none text-ink;
+}
+html[data-contrast='high'] .btn-primary {
+  @apply bg-none bg-ink text-white shadow-none;
+}
+html[data-contrast='high'] .glass {
+  @apply bg-surface backdrop-blur-none backdrop-saturate-100;
+}
+html[data-contrast='high'] .icon-tile {
+  @apply bg-canvas;
+}
+
+/* Reduced motion (settings or OS): no transforms/animation on the new classes. */
+html[data-reduce-motion='on'] .card-hover:hover,
+html[data-reduce-motion='on'] .btn-primary:hover,
+html[data-reduce-motion='on'] .btn-secondary:hover {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-hover:hover,
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: none;
+  }
 }
 
 /* A consistent, high-visibility focus ring on every interactive element
@@ -62,7 +146,8 @@ html[data-contrast='high'] .text-muted {
   color: #15182b !important;
 }
 
-html[data-contrast='high'] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+html[data-contrast='high']
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline-width: 4px;
   outline-offset: 3px;
 }

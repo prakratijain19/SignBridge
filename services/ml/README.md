@@ -69,3 +69,54 @@ to the collection tool — the app never crashes on a missing model.
 > The model weight files under `apps/web/public/models/isl/` are git-ignored
 > (they are build artifacts); `labels.json` is committed via a `.gitkeep`'d
 > folder so the path always exists.
+
+## Training from a public image dataset (Phase 5a, CPU-only)
+
+Instead of self-collecting, you can train from a folder of labeled static ISL
+images (e.g. an alphabet A–Z / digit dataset from Kaggle). **No GPU is needed** —
+MediaPipe reads each image once on CPU and the model is tiny.
+
+1. **Install training deps** (Python 3.11 recommended for reliable MediaPipe wheels):
+
+   ```bash
+   cd services/ml
+   python -m venv .venv
+   .venv/Scripts/activate        # Windows: .venv\Scripts\activate
+   pip install -e ".[train,dev]"
+   ```
+
+2. **Arrange the dataset** as one subfolder per class:
+
+   ```text
+   isl_dataset/
+     A/ img1.jpg img2.jpg ...
+     B/ ...
+     1/ ...
+   ```
+
+3. **Process images → landmarks** (a few minutes for a few thousand images):
+
+   ```bash
+   python -m app.build_dataset_from_images --images-dir ../../path/to/isl_dataset --out dataset.json
+   ```
+
+   It downloads the same `hand_landmarker.task` model the web app uses, extracts
+   the canonical **86-dim** feature vector per image (identical to the browser
+   extractor in `apps/web/src/lib/sign/landmark-features.ts`), and prints per-label
+   counts plus how many images were skipped (no usable hand — some skips are normal).
+
+4. **Train** (seconds to a couple of minutes on CPU). Labels come from the dataset,
+   not the built-in 15-word vocabulary:
+
+   ```bash
+   python -m app.train_isl --dataset dataset.json
+   ```
+
+5. **Use it:** refresh `/sign`. The recognition page is driven entirely by the
+   model's `labels.json`, so letters/numbers/words display and recognize without
+   any code change.
+
+> The 86-dim feature convention (wrist-origin translation, wrist→middle-MCP scale,
+> hand slots ordered left-to-right by mean x, `[present, 42, present, 42]` layout,
+> un-mirrored input) is defined once and implemented identically in both the
+> Python processor and the web extractor — they must never diverge.

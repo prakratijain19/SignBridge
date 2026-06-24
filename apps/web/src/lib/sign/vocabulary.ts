@@ -32,6 +32,25 @@ export const LABEL_DISPLAY: Record<IslLabel, string> = {
   more: 'More',
 };
 
-export function displayLabel(label: IslLabel): string {
-  return LABEL_DISPLAY[label] ?? label;
+/**
+ * Formats an arbitrary label for display: underscores → spaces, words
+ * capitalized. Used as the fallback for labels that aren't in the curated
+ * vocabulary — e.g. a model trained from a dataset of letters/words whose
+ * labels come entirely from the trained model's labels.json.
+ */
+export function prettyLabel(raw: string): string {
+  return raw
+    .split('_')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+/**
+ * Display text for a label. Known vocabulary labels use their curated label;
+ * anything else (including dataset-trained labels) is formatted generically, so
+ * the recognizer works with arbitrary labels without code changes.
+ */
+export function displayLabel(label: string): string {
+  return LABEL_DISPLAY[label as IslLabel] ?? prettyLabel(label);
 }

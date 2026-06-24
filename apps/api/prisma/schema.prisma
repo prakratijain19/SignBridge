@@ -45,18 +45,29 @@ enum MessageSender {
   PARTNER
 }
 
+enum LessonStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
   name          String?
   passwordHash  String
   role          Role           @default(HEARING_USER)
-  refreshTokens RefreshToken[]
-  settings      UserSettings?
-  conversations Conversation[]
-  signSamples   SignSample[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  refreshTokens     RefreshToken[]
+  settings          UserSettings?
+  conversations     Conversation[]
+  signSamples       SignSample[]
+  emergencyContacts EmergencyContact[]
+  quickPhrases      QuickPhrase[]
+  emergencyEvents   EmergencyEvent[]
+  lessonProgress    LessonProgress[]
+  signMastery       SignMastery[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@map("users")
 }
@@ -129,4 +140,73 @@ model SignSample {
   @@index([label])
   @@index([userId])
   @@map("sign_samples")
+}
+
+model EmergencyContact {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String
+  relation  String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("emergency_contacts")
+}
+
+model QuickPhrase {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  language  String   @default("en") // en | hi | gu
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("quick_phrases")
+}
+
+model EmergencyEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  language  String   @default("en")
+  channel   String   @default("spoken") // spoken | displayed | contact
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("emergency_events")
+}
+
+model LessonProgress {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  status    LessonStatus @default(IN_PROGRESS)
+  score     Int? // last quiz score for this lesson (percent), if taken
+  updatedAt DateTime     @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@map("lesson_progress")
+}
+
+model SignMastery {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String
+  attemptCount Int      @default(0)
+  correctCount Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, label])
+  @@index([userId])
+  @@map("sign_mastery")
 }
